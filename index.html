@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Step Counter</title>
+  <title>Animated Step Counter</title>
   <style>
     body {
-      background: transparent;
+      margin: 0;
+      background: transparent; /* прозрачный фон */
       overflow: hidden;
+      font-family: Arial, sans-serif;
     }
     #steps {
       font-size: 64px;
@@ -16,23 +18,56 @@
       position: absolute;
       top: 10%;
       left: 10%;
+      transition: all 0.5s ease; /* плавное изменение */
     }
   </style>
 </head>
 <body>
   <div id="steps">0 шагов</div>
+
   <script>
+    const firebaseURL = "https://dddd-6f427-default-rtdb.firebaseio.com/steps.json"; // 
+    let currentSteps = 0;
+
+    function animateSteps(newSteps) {
+      const stepsDiv = document.getElementById("steps");
+      let start = currentSteps;
+      let end = newSteps;
+      let duration = 500; // 0.5 секунды
+      let startTime = null;
+
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        let progress = timestamp - startTime;
+        let value = Math.floor(start + (end - start) * (progress / duration));
+        if (value > end) value = end;
+        stepsDiv.innerText = value + " шагов";
+        if (progress < duration) {
+          requestAnimationFrame(step);
+        } else {
+          currentSteps = end;
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
     async function updateSteps() {
       try {
-        const res = await fetch("https://dddd-6f427-default-rtdb.firebaseio.com/steps.json");
+        const res = await fetch(firebaseURL);
+        if (!res.ok) throw new Error("Ошибка сети: " + res.status);
         const data = await res.json();
+        console.log("Данные с Firebase:", data);
+
         if (data && data.steps !== undefined) {
-          document.getElementById("steps").innerText = data.steps + " шагов";
+          animateSteps(data.steps);
         }
       } catch (e) {
-        console.log("Ошибка загрузки:", e);
+        console.error("Ошибка загрузки шагов:", e);
       }
     }
+
+    // Обновляем каждые 2 секунды
     setInterval(updateSteps, 2000);
     updateSteps();
   </script>
