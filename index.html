@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Step Counter</title>
+  <style>
+    body {
+      background: transparent;
+      overflow: hidden;
+    }
+    #steps {
+      font-size: 64px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 8px black;
+      position: absolute;
+      top: 10%;
+      left: 10%;
+    }
+  </style>
+</head>
+<body>
+  <div id="steps">0 шагов</div>
+  <script>
+    async function updateSteps() {
+      try {
+        const res = await fetch("https://dddd-6f427-default-rtdb.firebaseio.com/steps.json");
+        const data = await res.json();
+        if (data && data.steps !== undefined) {
+          document.getElementById("steps").innerText = data.steps + " шагов";
+        }
+      } catch (e) {
+        console.log("Ошибка загрузки:", e);
+      }
+    }
+    setInterval(updateSteps, 2000);
+    updateSteps();
+  </script>
+</body>
+</html>
